@@ -1,5 +1,9 @@
 import express from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { connectDB } from "./config/database.js";
+import logger from "./config/logger.js";
+
 
 const app = express();
 app.use(express.json());
