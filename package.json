@@ -9,7 +9,8 @@
     "start": "node server.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "gen:tree": "npx tree-node-cli -a -S -I \"node_modules|.git\" > structure.txt"
   },
   "keywords": [],
   "author": "shoaib",
