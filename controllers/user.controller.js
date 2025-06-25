@@ -83,7 +83,7 @@ export const updateProfile = async (req, res, next) => {
   }
 };
 
-const deleteProfile = async (req, res, next) => {
+export const deleteProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user || user.deleted) {
