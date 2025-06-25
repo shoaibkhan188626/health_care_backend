@@ -1,11 +1,7 @@
 import User from "../models/user.js";
-import Joi from "joi";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import logger from "../config/logger.js";
-import { v2 as cloudinary } from "cloudinary";
-import multer from "multer";
-import { Readable } from "stream";
 import { validate } from "../utils/validate.js";
 import {
   ValidationError,
@@ -14,165 +10,18 @@ import {
   ForbiddenError,
 } from "../utils/error.js";
 import { generateToken, hashToken } from "../utils/crypto.js";
-import httpClient from "../utils/httpClient.js";
+import httpClient from "../utils/httpclient.js";
 import mongoose from "mongoose";
+import {
+  registerSchema,
+  loginSchema,
+  passwordResetSchema,
+  resetPasswordSchema,
+  refreshTokenSchema,
+} from "../validations/auth.validation.js";
 
-// Configure Cloudinary
+// Configure environment
 dotenv.config();
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
-
-// Multer for in-memory storage
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      return cb(
-        new ValidationError("Only JPEG, PNG, and PDF files are allowed")
-      );
-    }
-    cb(null, true);
-  },
-});
-
-// Validation schemas
-const registerSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required().messages({
-    "string.min": "Name must be at least 2 characters",
-    "string.max": "Name cannot exceed 100 characters",
-    "any.required": "Name is required",
-  }),
-  email: Joi.string().email().required().messages({
-    "string.email": "Invalid email format",
-    "any.required": "Email is required",
-  }),
-  phone: Joi.string()
-    .pattern(/^[6-9]\d{9}$/)
-    .required()
-    .messages({
-      "string.pattern.base":
-        "Invalid Indian mobile number (must start with 6-9 and be 10 digits)",
-      "any.required": "Phone number is required",
-    }),
-  password: Joi.string().min(8).required().messages({
-    "string.min": "Password must be at least 8 characters",
-    "any.required": "Password is required",
-  }),
-  role: Joi.string()
-    .valid("patient", "doctor", "lab", "pharmacy", "admin")
-    .default("patient"),
-  hospitalId: Joi.string()
-    .when("role", {
-      is: Joi.string().valid("doctor", "lab", "pharmacy", "admin"),
-      then: Joi.string()
-        .required()
-        .messages({
-          "any.required": "Hospital ID is required for non-patients",
-        }),
-      otherwise: Joi.forbidden(),
-    })
-    .custom((value, helpers) => {
-      if (value && !mongoose.isValidObjectId(value)) {
-        return helpers.error("any.invalid", { message: "Invalid hospital ID" });
-      }
-      return value;
-    }),
-  address: Joi.object({
-    street: Joi.string().max(200).optional(),
-    city: Joi.string().max(100).optional(),
-    state: Joi.string().max(100).optional(),
-    pincode: Joi.string()
-      .pattern(/^\d{6}$/)
-      .optional()
-      .messages({
-        "string.pattern.base": "Invalid 6-digit pincode",
-      }),
-  }).optional(),
-  location: Joi.object({
-    coordinates: Joi.array().items(Joi.number()).length(2).optional(),
-  }).optional(),
-});
-
-const loginSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    "string.email": "Invalid email format",
-    "any.required": "Email is required",
-  }),
-  password: Joi.string().required().messages({
-    "any.required": "Password is required",
-  }),
-});
-
-const passwordResetSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    "string.email": "Invalid email format",
-    "any.required": "Email is required",
-  }),
-});
-
-const resetPasswordSchema = Joi.object({
-  token: Joi.string().required().messages({
-    "any.required": "Reset token is required",
-  }),
-  password: Joi.string().min(8).required().messages({
-    "string.min": "Password must be at least 8 characters",
-    "any.required": "Password is required",
-  }),
-});
-
-const refreshTokenSchema = Joi.object({
-  refreshToken: Joi.string().required().messages({
-    "any.required": "Refresh token is required",
-  }),
-});
-
-const verifyKycSchema = Joi.object({
-  userId: Joi.string()
-    .required()
-    .custom((value, helpers) => {
-      if (!mongoose.isValidObjectId(value)) {
-        return helpers.error("any.invalid", { message: "Invalid user ID" });
-      }
-      return value;
-    }),
-  status: Joi.string().valid("verified", "rejected").required(),
-  rejectionReason: Joi.string().max(500).when("status", {
-    is: "rejected",
-    then: Joi.required(),
-    otherwise: Joi.forbidden(),
-  }),
-});
-
-// Helper function to upload to Cloudinary
-const uploadToCloudinary = (file, userId) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: `healthcare/kyc/${userId}`,
-        resource_type: "auto",
-        access_mode: "authenticated",
-      },
-      (error, result) => {
-        if (error) {
-          logger.error("Cloudinary upload failed", {
-            error: error.message,
-            userId,
-          });
-          return reject(new AppError("Failed to upload to Cloudinary", 500));
-        }
-        resolve(result.secure_url);
-      }
-    );
-    Readable.from(file.buffer).pipe(stream);
-  });
-};
 
 // Register user
 export const register = async (req, res, next) => {
@@ -515,146 +364,6 @@ export const refreshToken = async (req, res, next) => {
   }
 };
 
-// Upload KYC documents
-export const uploadKycDocuments = async (req, res, next) => {
-  try {
-    upload.fields([
-      { name: "aadhar", maxCount: 1 },
-      { name: "pan", maxCount: 1 },
-      { name: "license", maxCount: 1 },
-    ])(req, res, async (err) => {
-      if (err) {
-        logger.warn("KYC upload error", {
-          error: err.message,
-          userId: req.user.id,
-          ip: req.ip,
-        });
-        return next(new ValidationError(err.message));
-      }
-
-      const user = await User.findById(req.user.id);
-      if (user.role !== "doctor") {
-        logger.warn("Non-doctor attempted KYC upload", {
-          userId: user._id,
-          role: user.role,
-          ip: req.ip,
-        });
-        throw new ForbiddenError("Only doctors can upload KYC documents");
-      }
-
-      const { aadhar, pan, license } = req.files;
-
-      try {
-        if (aadhar) {
-          const url = await uploadToCloudinary(aadhar[0], user._id);
-          user.documents.set("aadhar", url);
-        }
-        if (pan) {
-          const url = await uploadToCloudinary(pan[0], user._id);
-          user.documents.set("pan", url);
-        }
-        if (license) {
-          const url = await uploadToCloudinary(license[0], user._id);
-          user.documents.set("license", url);
-        }
-      } catch (err) {
-        return next(err);
-      }
-
-      user.kyc.status = "pending";
-      await user.save();
-
-      logger.info("KYC documents uploaded", {
-        userId: user._id,
-        externalId: user.externalId,
-        email: user.email,
-        ip: req.ip,
-      });
-
-      try {
-        await httpClient.post(
-          `${process.env.NOTIFICATION_SERVICE_URL}/api/notifications`,
-          {
-            userId: user.externalId,
-            type: "system",
-            message: `KYC documents uploaded by ${user.name} (Doctor) awaiting verification.`,
-          }
-        );
-      } catch (err) {
-        logger.warn("Failed to notify admin of KYC upload", {
-          userId: user._id,
-          error: err.message,
-        });
-      }
-
-      res.json({
-        message: "KYC documents uploaded successfully, awaiting verification",
-      });
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Verify KYC
-export const verifyKyc = async (req, res, next) => {
-  try {
-    validate(verifyKycSchema, req.body, req);
-
-    if (req.user.role !== "admin") {
-      logger.warn("Non-admin attempted KYC verification", {
-        userId: req.user.id,
-        role: req.user.role,
-        ip: req.ip,
-      });
-      throw new ForbiddenError("Only admins can verify KYC");
-    }
-
-    const { userId, status, rejectionReason } = req.body;
-    const user = await User.findById(userId);
-    if (!user || user.role !== "doctor") {
-      logger.warn("Doctor not found for KYC verification", {
-        userId,
-        ip: req.ip,
-      });
-      throw new NotFoundError("Doctor not found");
-    }
-
-    user.kyc.status = status;
-    user.kyc.verifiedBy = req.user.id;
-    user.kyc.verifiedAt = status === "verified" ? new Date() : null;
-    user.kyc.rejectionReason = status === "rejected" ? rejectionReason : null;
-    user.isVerified = status === "verified";
-    await user.save();
-
-    try {
-      await httpClient.post(
-        `${process.env.NOTIFICATION_SERVICE_URL}/api/notifications`,
-        {
-          userId: user.externalId,
-          type: "system",
-          message: `Your KYC has been ${status}. ${status === "rejected" ? `Reason: ${rejectionReason}` : ""}`,
-        }
-      );
-      logger.info("KYC verification completed", {
-        userId: user._id,
-        externalId: user.externalId,
-        status,
-        ip: req.ip,
-      });
-    } catch (err) {
-      logger.warn("Failed to notify doctor of KYC status", {
-        userId: user._id,
-        error: err.message,
-      });
-    }
-
-    res.json({ message: `KYC ${status} successfully` });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export {
   register,
   login,
@@ -662,6 +371,4 @@ export {
   requestPasswordReset,
   resetPassword,
   refreshToken,
-  uploadKycDocuments,
-  verifyKyc,
 };
