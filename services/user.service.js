@@ -31,7 +31,7 @@ export const createUser = async (data) => {
 
 export const findUserByEmail = async (email, selectPassword = false) => {
   const user = await User.findOne({ email }).select(
-    selectPassword ? "+password" : ""
+    selectPassword ? "+password" : "",
   );
   if (!user || user.deleted) {
     logger.warn("User not found", { email });

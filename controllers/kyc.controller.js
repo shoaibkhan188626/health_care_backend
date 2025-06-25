@@ -61,7 +61,7 @@ const uploadToCloudinary = (file, userId) => {
           return reject(new AppError("Failed to upload Cloudinary", 500));
         }
         resolve(result.secure_url);
-      }
+      },
     );
     Readable.from(file.buffer).pipe(stream);
   });
@@ -125,7 +125,7 @@ export const uploadKycDocuments = async (req, res, next) => {
           {
             userId: user.externalId,
             type: `KYC documents uploaded by ${user.name}(Doctor) awaiting verification`,
-          }
+          },
         );
       } catch (error) {
         logger.warn("Failed to notify admin of KYC upload", {
@@ -179,7 +179,7 @@ export const verifyKyc = async (req, res, next) => {
           userId: user.externalId,
           type: "system",
           message: `your KYC has been ${status}. ${status === "rejected" ? `Reason:${rejectionReason}` : ""}`,
-        }
+        },
       );
       logger.info("KYC verification completed", {
         userId: user._id,
@@ -198,5 +198,3 @@ export const verifyKyc = async (req, res, next) => {
     next(error);
   }
 };
-
-

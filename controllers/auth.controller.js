@@ -48,7 +48,7 @@ export const register = async (req, res, next) => {
     if (hospitalId) {
       try {
         const response = await httpClient.get(
-          `${process.env.HOSPITAL_SERVICE_URL}/api/hospitals/${hospitalId}`
+          `${process.env.HOSPITAL_SERVICE_URL}/api/hospitals/${hospitalId}`,
         );
         if (!response.data.hospital) {
           logger.warn("Invalid hospital ID", { hospitalId, ip: req.ip });
@@ -93,12 +93,12 @@ export const register = async (req, res, next) => {
         hospitalId: user.hospitalId,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
     const refreshToken = jwt.sign(
       { id: user._id, externalId: user.externalId },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "30d" },
     );
 
     try {
@@ -108,7 +108,7 @@ export const register = async (req, res, next) => {
           userId: user.externalId,
           type: "system",
           message: `Welcome to the healthcare ecosystem, ${name}!`,
-        }
+        },
       );
     } catch (err) {
       logger.warn("Failed to send welcome notification", {
@@ -172,12 +172,12 @@ export const login = async (req, res, next) => {
         hospitalId: user.hospitalId,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
     const refreshToken = jwt.sign(
       { id: user._id, externalId: user.externalId },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "30d" },
     );
 
     logger.info("User logged in", {
@@ -250,7 +250,7 @@ export const requestPasswordReset = async (req, res, next) => {
           userId: user.externalId,
           type: "system",
           message: `Password reset requested. Click here to reset: ${resetUrl}`,
-        }
+        },
       );
       logger.info("Password reset email sent", {
         userId: user._id,
@@ -348,7 +348,7 @@ export const refreshToken = async (req, res, next) => {
         hospitalId: user.hospitalId,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     logger.info("Access token refreshed", {

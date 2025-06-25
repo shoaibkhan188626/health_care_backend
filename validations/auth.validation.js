@@ -29,11 +29,9 @@ export const registerSchema = Joi.object({
   hospitalId: Joi.string()
     .when("role", {
       is: Joi.string().valid("doctor", "lab", "pharmacy", "admin"),
-      then: Joi.string()
-        .required()
-        .messages({
-          "any.required": "Hospital ID is required for non-patients",
-        }),
+      then: Joi.string().required().messages({
+        "any.required": "Hospital ID is required for non-patients",
+      }),
       otherwise: Joi.forbidden(),
     })
     .custom((value, helpers) => {

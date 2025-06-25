@@ -5,7 +5,7 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json(),
-    winston.format.metadata()
+    winston.format.metadata(),
   ),
   defaultMeta: { service: "user-service" },
   transports: [
@@ -16,7 +16,7 @@ const logger = winston.createLogger({
 
 if (process.env.NODE_ENV !== "production") {
   logger.add(
-    new winston.transports.Console({ format: winston.format.simple() })
+    new winston.transports.Console({ format: winston.format.simple() }),
   );
 }
 

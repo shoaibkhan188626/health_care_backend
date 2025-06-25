@@ -7,7 +7,7 @@ export const cleanupExpiredTokens = () => {
     try {
       const result = await User.updateMany(
         { passwordResetExpires: { $lt: Date.now() } },
-        { $unset: { passwordResetToken: "", passwordResetExpires: "" } }
+        { $unset: { passwordResetToken: "", passwordResetExpires: "" } },
       );
       logger.info("Cleaned up expired password reset token", {
         modifiedCount: result.modifiedCount,

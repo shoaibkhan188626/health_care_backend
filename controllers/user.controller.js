@@ -37,7 +37,7 @@ const updateProfileSchema = Joi.object({
 export const getProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "-password -passwordResetToken -passwordResetExpires"
+      "-password -passwordResetToken -passwordResetExpires",
     );
     if (!user || user.deleted) {
       logger.warn("User not found", { userId: req.user.id, ip: req.ip });

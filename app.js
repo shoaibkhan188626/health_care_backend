@@ -16,7 +16,7 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: "too many request please try again later",
-  })
+  }),
 );
 
 app.use(express.json());
@@ -27,7 +27,7 @@ app.use("/api/kyc", kycRoutes);
 app.use("/api/users", userRoutes);
 
 app.get("/health", (req, res) =>
-  res.json({ status: "ok", service: "user-service" })
+  res.json({ status: "ok", service: "user-service" }),
 );
 
 app.use(errorHandler);
