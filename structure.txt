@@ -6,8 +6,11 @@ healthcare_backend
 |   |-- database.js
 |   `-- logger.js
 |-- controllers
-|   `-- auth.controller.js
+|   |-- auth.controller.js
+|   |-- kyc.controller.js
+|   `-- user.controller.js
 |-- jobs
+|   `-- cleanup.js
 |-- middlewares
 |   |-- ErrorHandler.js
 |   `-- auth.middleware.js
@@ -16,11 +19,18 @@ healthcare_backend
 |-- package-lock.json
 |-- package.json
 |-- routes
-|   `-- auth.routes.js
+|   |-- auth.routes.js
+|   |-- kyc.routes.js
+|   `-- user.routes.js
 |-- server.js
 |-- services
+|   `-- user.service.js
 |-- structure.txt
 |-- uploads
 |-- utils
+|   |-- crypto.js
+|   |-- error.js
+|   |-- httpclient.js
+|   `-- validate.js
 `-- validations
     `-- auth.validation.js
