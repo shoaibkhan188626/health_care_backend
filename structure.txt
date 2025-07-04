@@ -1,36 +1,16 @@
-healthcare_backend
-|-- .env
-|-- README.md
-|-- app.js
-|-- config
-|   |-- database.js
-|   `-- logger.js
-|-- controllers
-|   |-- auth.controller.js
-|   |-- kyc.controller.js
-|   `-- user.controller.js
-|-- jobs
-|   `-- cleanup.js
-|-- middlewares
-|   |-- ErrorHandler.js
-|   `-- auth.middleware.js
-|-- models
-|   `-- user.js
-|-- package-lock.json
-|-- package.json
-|-- routes
-|   |-- auth.routes.js
-|   |-- kyc.routes.js
-|   `-- user.routes.js
-|-- server.js
-|-- services
-|   `-- user.service.js
-|-- structure.txt
-|-- uploads
-|-- utils
-|   |-- crypto.js
-|   |-- error.js
-|   |-- httpclient.js
-|   `-- validate.js
-`-- validations
-    `-- auth.validation.js
+D:\Health_Care\appointment_management_system\user_service\node_modules\@hapi\hoek\lib\error.js:23
+            Error.captureStackTrace(this, exports.assert);
+                  ^
+
+Error: Cannot apply rules to empty ruleset or the last rule added does not support rule properties
+    at new module.exports (D:\Health_Care\appointment_management_system\user_service\node_modules\@hapi\hoek\lib\error.js:23:19)
+    at module.exports (D:\Health_Care\appointment_management_system\user_service\node_modules\@hapi\hoek\lib\assert.js:21:11)
+    at internals.Base.rule (D:\Health_Care\appointment_management_system\user_service\node_modules\joi\lib\base.js:479:9)
+    at internals.Base.method [as message] (D:\Health_Care\appointment_management_system\user_service\node_modules\joi\lib\extend.js:145:29)
+    at file:///D:/Health_Care/appointment_management_system/user_service/controllers/user.controller.js:17:6
+    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:547:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+
+Node.js v22.12.0
+[nodemon] app crashed - waiting for file changes before starting...

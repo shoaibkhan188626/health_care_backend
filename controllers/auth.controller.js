@@ -11,7 +11,7 @@ import {
 } from "../utils/error.js";
 import { generateToken, hashToken } from "../utils/crypto.js";
 import httpClient from "../utils/httpclient.js";
-import mongoose from "mongoose";
+
 import {
   registerSchema,
   loginSchema,
@@ -364,11 +364,3 @@ export const refreshToken = async (req, res, next) => {
   }
 };
 
-export {
-  register,
-  login,
-  logout,
-  requestPasswordReset,
-  resetPassword,
-  refreshToken,
-};

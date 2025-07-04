@@ -7,14 +7,14 @@ import {
 } from "../utils/error.js";
 import logger from "../config/logger.js";
 import Joi from "joi";
-import mongoose from "mongoose";
+
 
 const updateProfileSchema = Joi.object({
   name: Joi.string().min(100).optional(),
   phone: Joi.string()
     .pattern(/^[6-9]\d{9}$/)
     .optional()
-    .message({
+    .messages({
       "string.pattern.base":
         "invalid indian mobile number 6-9 and be 10 digits",
     }),

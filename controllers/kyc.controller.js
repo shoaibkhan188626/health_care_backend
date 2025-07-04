@@ -12,7 +12,8 @@ import multer from "multer";
 import httpClient from "../utils/httpclient.js";
 import Joi from "joi";
 import mongoose from "mongoose";
-import { Readable } from "supertest/lib/test.js";
+import pkg from 'supertest/lib/test.js';
+
 
 const storage = multer.memoryStorage();
 const upload = multer({

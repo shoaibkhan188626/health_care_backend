@@ -6,8 +6,6 @@ import {
   requestPasswordReset,
   resetPassword,
   refreshToken,
-  uploadKycDocuments,
-  verifyKyc,
 } from "../controllers/auth.controller.js";
 
 import { authenticate, restrictInfo } from "../middlewares/auth.middleware.js";
@@ -20,7 +18,7 @@ router.post("/", authenticate, logout);
 router.post("/password-reset", requestPasswordReset);
 router.post("/", resetPassword);
 router.post("/refresh", refreshToken);
-router.post("/kyc/upload", authenticate, uploadKycDocuments);
-router.post("/kyc/verify", authenticate, restrictInfo("admin"), verifyKyc);
+
+
 
 export default router;
